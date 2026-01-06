@@ -275,6 +275,7 @@ void LayerManager::publish_cost_layer(const lvr2::VertexMap<float>& costs, const
       timestamp
     )
   );
+  RCLCPP_INFO(node_->get_logger(), "Published cost layer '%s' with UUID: %s", name.c_str(), map_.getUUID().c_str());
 }
 
 void LayerManager::publish_cost_update(const lvr2::VertexMap<float>& costs, const float default_value, const std::string& name, const rclcpp::Time& timestamp)

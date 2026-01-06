@@ -35,6 +35,7 @@
  *
  */
 #include <algorithm>
+#include <set>
 #include <unordered_set>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
@@ -337,6 +338,7 @@ bool MeshMap::readMap()
   boost::uuids::random_generator gen;
   boost::uuids::uuid uuid = gen();
   uuid_str = boost::uuids::to_string(uuid);
+  RCLCPP_INFO(node->get_logger(), "Generated Mesh UUID: %s", uuid_str.c_str());
 
   auto face_normals_opt = mesh_io_ptr->getDenseAttributeMap<lvr2::DenseFaceMap<Normal>>("face_normals");
   if (face_normals_opt)
@@ -1124,36 +1126,62 @@ boost::optional<std::tuple<           // returns:
       Vector& query_point,            // -> query point
       const float& max_dist)          // -> maximum search radius around query point
 {
-  if(auto vH_opt = getNearestVertexHandle(query_point))
+  if(!kd_tree_ptr)
   {
-    auto vH = vH_opt.unwrap();
+    throw std::runtime_error("Tried to access kd tree which is not yet initialized");
+  }
+
+  size_t k = std::min<size_t>(10, adaptor_ptr->kdtree_get_point_count());
+  if (k == 0)
+  {
+      RCLCPP_ERROR_STREAM(node->get_logger(), "Mesh has no vertices!");
+      return boost::none;
+  }
+  float query_pt[3] = {query_point.x, query_point.y, query_point.z};
+  std::vector<size_t> ret_indexes(k);
+  std::vector<float> out_dists_sqr(k);
+
+  size_t num_results = kd_tree_ptr->knnSearch(&query_pt[0], k, &ret_indexes[0], &out_dists_sqr[0]);
+
+  if(num_results > 0)
+  {
     float lowest_distance_found = std::numeric_limits<float>::max();
     std::array<Vector, 3> closest_face_vertices;
     std::array<float, 3> bary_coords_on_closest_face;
     lvr2::OptionalFaceHandle opt_closest_face_handle;
-    for(auto current_face_handle : mesh_ptr->getFacesOfVertex(vH))
-    {
-      const auto& current_vertices = mesh_ptr->getVertexPositionsOfFace(current_face_handle);
-      float distance_to_current_face = 0;
-      std::array<float, 3> current_bary_coords;
-      const bool is_query_point_in_current_face = mesh_map::projectedBarycentricCoords(query_point, current_vertices, current_bary_coords, distance_to_current_face);
+    std::set<lvr2::FaceHandle> checked_faces;
 
-      if(is_query_point_in_current_face && distance_to_current_face < lowest_distance_found)
+    for(size_t i = 0; i < num_results; ++i)
+    {
+      lvr2::VertexHandle vH(ret_indexes[i]);
+      for(auto current_face_handle : mesh_ptr->getFacesOfVertex(vH))
       {
-        lowest_distance_found = distance_to_current_face;
-        opt_closest_face_handle = current_face_handle;
-        closest_face_vertices = current_vertices;
-        bary_coords_on_closest_face = current_bary_coords;
+        if(checked_faces.insert(current_face_handle).second)
+        {
+          const auto& current_vertices = mesh_ptr->getVertexPositionsOfFace(current_face_handle);
+          float distance_to_current_face = 0;
+          std::array<float, 3> current_bary_coords;
+          const bool is_query_point_in_current_face = mesh_map::projectedBarycentricCoords(query_point, current_vertices, current_bary_coords, distance_to_current_face);
+
+          if(is_query_point_in_current_face && distance_to_current_face < lowest_distance_found)
+          {
+            lowest_distance_found = distance_to_current_face;
+            opt_closest_face_handle = current_face_handle;
+            closest_face_vertices = current_vertices;
+            bary_coords_on_closest_face = current_bary_coords;
+          }
+        }
       }
     }
-    if(opt_closest_face_handle)
+
+    if(opt_closest_face_handle && lowest_distance_found <= max_dist)
     {
       return std::make_tuple(opt_closest_face_handle.unwrap(), closest_face_vertices, bary_coords_on_closest_face);
     }
-    RCLCPP_ERROR_STREAM(node->get_logger(), "No containing face found!");
+    RCLCPP_ERROR_STREAM(node->get_logger(), "No containing face found within max_dist " << max_dist << " (lowest dist: " << lowest_distance_found << ")");
     return boost::none;
   }
-  RCLCPP_FATAL_STREAM(node->get_logger(), "Could not find the nearest vertex");
+  RCLCPP_FATAL_STREAM(node->get_logger(), "Could not find any nearest vertices");
   return boost::none;
 }
 

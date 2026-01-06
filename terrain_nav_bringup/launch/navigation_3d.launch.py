@@ -19,7 +19,7 @@ def generate_launch_description():
     lidarslam_config = os.path.join(pkg_dir, 'config', 'lidarslam_3d.yaml')
     nav2_config = os.path.join(pkg_dir, 'config', 'nav2_3d.yaml')
     world_path = os.path.join(pkg_dir, 'worlds', 'uneven_terrain.world')
-    urdf_path = os.path.join(pkg_dir, 'urdf', 'same_vehicle.urdf.xacro')
+    urdf_path = os.path.join(pkg_dir, 'urdf', 'mesh_bot.urdf.xacro')
     default_pcd = os.path.join(pkg_dir, 'maps', 'map.pcd')
 
     # Arguments
@@ -81,8 +81,8 @@ def generate_launch_description():
         package='ros_gz_bridge',
         executable='parameter_bridge',
         name='bridge_tf',
-        arguments=['/model/my_bot/tf_odom@tf2_msgs/msg/TFMessage[ignition.msgs.Pose_V'],
-        remappings=[('/model/my_bot/tf_odom', '/tf')],
+        arguments=['/model/my_bot/tf@tf2_msgs/msg/TFMessage[ignition.msgs.Pose_V'],
+        remappings=[('/model/my_bot/tf', '/tf')],
         parameters=[{'use_sim_time': use_sim_time}],
         output='screen'
     )

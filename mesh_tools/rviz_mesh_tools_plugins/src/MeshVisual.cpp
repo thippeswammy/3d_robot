@@ -713,8 +713,9 @@ void MeshVisual::enteringTriangleMeshWithVertexCosts(const Geometry& mesh, const
   float range = maxCost - minCost;
   if (range <= 0)
   {
-    RCLCPP_ERROR(rclcpp::get_logger("rviz_mesh_tools_plugins"), "Illegal vertex cost limits!");
-    return;
+    RCLCPP_DEBUG(rclcpp::get_logger("rviz_mesh_tools_plugins"), "Uniform vertex cost detected (range <= 0). Setting normalized cost to 0.0.");
+    range = 1.0; // Avoid division by zero
+    minCost = maxCost; // Ensure (vertexCosts[i] - minCost) is 0
   }
 
   if (!m_vertexCostMaterial)
@@ -1078,8 +1079,8 @@ bool MeshVisual::updateVertexCosts(
   float range = maxCost - minCost;
   if (range <= 0)
   {
-    RCLCPP_ERROR(rclcpp::get_logger("rviz_mesh_tools_plugins"), "Illegal vertex cost limits!");
-    return false;
+    RCLCPP_DEBUG(rclcpp::get_logger("rviz_mesh_tools_plugins"), "Uniform vertex cost detected (range <= 0). Setting normalized cost to 0.0.");
+    range = 1.0;
   }
 
   if (!m_vertexCostMaterial)

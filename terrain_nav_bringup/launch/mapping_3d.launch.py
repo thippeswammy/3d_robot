@@ -18,7 +18,7 @@ def generate_launch_description():
     rviz_config = os.path.join(pkg_dir, 'config', 'rviz_mapping.rviz')
     lidarslam_config = os.path.join(pkg_dir, 'config', 'lidarslam_3d.yaml')
     world_path = os.path.join(pkg_dir, 'worlds', 'uneven_terrain.world')
-    urdf_path = os.path.join(pkg_dir, 'urdf', 'same_vehicle.urdf.xacro')
+    urdf_path = os.path.join(pkg_dir, 'urdf', 'mesh_bot.urdf.xacro')
 
     # Arguments
     use_sim_time = LaunchConfiguration('use_sim_time', default='true')
@@ -75,7 +75,7 @@ def generate_launch_description():
             '/model/my_bot/scan@sensor_msgs/msg/LaserScan[ignition.msgs.LaserScan',
             '/model/my_bot/points/points@sensor_msgs/msg/PointCloud2[ignition.msgs.PointCloudPacked',
             '/model/my_bot/joint_states@sensor_msgs/msg/JointState[ignition.msgs.Model',
-            '/clock@rosgraph_msgs/msg/Clock[ignition.msgs.Clock',
+            '/world/uneven_terrain/clock@rosgraph_msgs/msg/Clock[ignition.msgs.Clock',
             '/model/my_bot/imu@sensor_msgs/msg/Imu[ignition.msgs.IMU'
         ],
         remappings=[
@@ -83,7 +83,8 @@ def generate_launch_description():
             ('/model/my_bot/joint_states', '/joint_states'),
             ('/model/my_bot/cmd_vel', '/cmd_vel'),
             ('/model/my_bot/odometry', '/odom'),
-            ('/model/my_bot/imu', '/imu')
+            ('/model/my_bot/imu', '/imu'),
+            ('/world/uneven_terrain/clock', '/clock')
         ],
         parameters=[{'use_sim_time': use_sim_time}],
         output='screen'
@@ -103,8 +104,8 @@ def generate_launch_description():
         package='ros_gz_bridge',
         executable='parameter_bridge',
         name='bridge_tf',
-        arguments=['/model/my_bot/tf_odom@tf2_msgs/msg/TFMessage[ignition.msgs.Pose_V'],
-        remappings=[('/model/my_bot/tf_odom', '/tf')],
+        arguments=['/model/my_bot/tf@tf2_msgs/msg/TFMessage[ignition.msgs.Pose_V'],
+        remappings=[('/model/my_bot/tf', '/tf')],
         parameters=[{'use_sim_time': use_sim_time}],
         output='screen'
     )

@@ -82,8 +82,8 @@ def generate_launch_description():
         package='ros_gz_bridge',
         executable='parameter_bridge',
         name='bridge_tf',
-        arguments=['/model/mesh_bot/tf_odom@tf2_msgs/msg/TFMessage[ignition.msgs.Pose_V'],
-        remappings=[('/model/mesh_bot/tf_odom', '/tf')], # Bridge directly to /tf
+        arguments=['/model/mesh_bot/tf@tf2_msgs/msg/TFMessage[ignition.msgs.Pose_V'],
+        remappings=[('/model/mesh_bot/tf', '/tf')], # Bridge directly to /tf
         parameters=[{'use_sim_time': use_sim_time}],
         output='screen'
     )

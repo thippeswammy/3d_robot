@@ -21,10 +21,12 @@ class SimpleLocalizationNode(Node):
         self.declare_parameter('map_frame', 'map')
         self.declare_parameter('odom_frame', 'odom')
         self.declare_parameter('base_frame', 'base_footprint')
+        self.declare_parameter('z_offset', 0.0)
         
         self.map_frame = self.get_parameter('map_frame').value
         self.odom_frame = self.get_parameter('odom_frame').value
         self.base_frame = self.get_parameter('base_frame').value
+        self.z_offset = self.get_parameter('z_offset').value
         
         self.tf_broadcaster = tf2_ros.TransformBroadcaster(self)
         self.tf_buffer = tf2_ros.Buffer()
@@ -52,6 +54,8 @@ class SimpleLocalizationNode(Node):
             # Check for the robot's model pose
             if transform.child_frame_id == 'my_bot':
                 t_map_base = self.transform_to_matrix(transform.transform)
+                # Apply Z-offset to align base_footprint with ground truth mesh
+                t_map_base[2, 3] += self.z_offset
                 self.process_localization(t_map_base, transform.header.stamp)
                 break
 

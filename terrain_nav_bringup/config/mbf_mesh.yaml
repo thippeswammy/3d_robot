@@ -2,7 +2,7 @@ move_base_flex:
   ros__parameters:
     global_frame: 'map'
     robot_frame: 'base_footprint'
-    odom_topic: 'odom'
+    odom_topic: '/model/my_bot/odometry'
 
     use_sim_time: true
     force_stop_at_goal: true

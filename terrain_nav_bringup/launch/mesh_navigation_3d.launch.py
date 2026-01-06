@@ -23,7 +23,8 @@ def generate_launch_description():
 
     # Mesh Map Paths
     default_mesh_map = os.path.join(pkg_dir, 'map', 'uneven_terrain.ply')
-    default_mesh_working = os.path.join(pkg_dir, 'map', 'map.h5')
+    # Use a writable path in the home directory or workspace for the working file
+    default_mesh_working = os.path.expanduser('~/mesh_navigation_map.h5')
 
     # Launch Parameters
     use_sim_time = LaunchConfiguration('use_sim_time')
@@ -71,7 +72,8 @@ def generate_launch_description():
             '/model/my_bot/imu@sensor_msgs/msg/Imu[ignition.msgs.IMU',
             '/world/uneven_terrain/clock@rosgraph_msgs/msg/Clock[ignition.msgs.Clock',
             '/model/my_bot/ground_truth@tf2_msgs/msg/TFMessage[ignition.msgs.Pose_V',
-            '/model/my_bot/pose_static@tf2_msgs/msg/TFMessage[gz.msgs.Pose_V'
+            '/model/my_bot/pose@tf2_msgs/msg/TFMessage[gz.msgs.Pose_V'
+
         ],
         remappings=[
             ('/model/my_bot/points/points', '/model/my_bot/cloud'),
@@ -79,7 +81,7 @@ def generate_launch_description():
             ('/model/my_bot/cmd_vel', '/cmd_vel'),
             ('/model/my_bot/imu', '/imu'),
             ('/world/uneven_terrain/clock', '/clock'),
-            ('/model/my_bot/pose_static', '/tf_gt')
+            ('/model/my_bot/ground_truth', '/tf_gt')
         ],
         parameters=[{'use_sim_time': use_sim_time}],
         output='screen'
@@ -107,7 +109,8 @@ def generate_launch_description():
             'use_sim_time': use_sim_time,
             'map_frame': 'map',
             'odom_frame': 'odom',
-            'base_frame': 'base_footprint'
+            'base_frame': 'base_footprint',
+            'z_offset': 0.0
         }]
     )
 

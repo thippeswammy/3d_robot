@@ -670,8 +670,8 @@ uint32_t CVPMeshPlanner::waveFrontPropagation(const mesh_map::Vector& original_s
   mesh_map::Vector goal = original_goal;
 
   // Find the containing faces of start and goal
-  const lvr2::OptionalFaceHandle start_opt = mesh_map_->getContainingFace(start, 0.4);
-  const lvr2::OptionalFaceHandle goal_opt = mesh_map_->getContainingFace(goal, 0.4);
+  const lvr2::OptionalFaceHandle start_opt = mesh_map_->getContainingFace(start, 1.0);
+  const lvr2::OptionalFaceHandle goal_opt = mesh_map_->getContainingFace(goal, 1.0);
 
   const auto t_initialization_start = std::chrono::steady_clock::now();
 

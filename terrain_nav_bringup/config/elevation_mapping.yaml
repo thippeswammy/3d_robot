@@ -1,0 +1,40 @@
+elevation_mapping:
+  ros__parameters:
+    # Topics
+    pointcloud_topic: /points       # VLP-16 Output
+    map_frame_id: map               # Global frame
+    robot_base_frame_id: base_link  
+    robot_pose_with_covariance_topic: /odom 
+    
+    # Grid Map
+    resolution: 0.05                # 5cm grid
+    map_length: 20.0                # 20x20m local map
+    
+    # FPS Configuration (Prevent Division by Zero)
+    map_acquire_fps: 5.0
+    publish_statistics_fps: 1.0
+    update_variance_fps: 1.0
+    recordable_fps: 3.0
+    
+    # Fusion
+    point_cloud_process_type: "continuous" # or "discrete"
+    
+    # Features
+    enable_visibility_cleanup: true # Raycasting to clear free space
+    enable_continuous_cleanup: true
+
+    # Storage
+    elevation_layer_name: "elevation"
+    
+    # Filter Chain (Smoothing)
+    postprocessing:
+      enable: false
+      # filters:
+      #   - name: inpaint
+      #     type: gridMapFilters/InpaintFilter
+      #     params:
+      #       radius: 0.1
+      #   - name: mean_filter
+      #     type: gridMapFilters/MeanFilter
+      #     params:
+      #       radius: 0.1

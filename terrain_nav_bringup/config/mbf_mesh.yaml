@@ -1,0 +1,111 @@
+move_base_flex:
+  ros__parameters:
+    global_frame: 'map'
+    robot_frame: 'base_footprint'
+    odom_topic: 'odom'
+
+    use_sim_time: true
+    force_stop_at_goal: true
+    force_stop_on_cancel: true
+
+    planners: ['mesh_planner']
+    mesh_planner:
+      type: 'cvp_mesh_planner/CVPMeshPlanner' 
+      cost_limit: 0.99 # Vertices with costs higher than this value will be avoided
+      publish_vector_field: true
+
+    planner_patience: 10.0
+    planner_max_retries: 2
+    project_path_onto_mesh: false
+
+    controllers: ['mesh_controller']
+    mesh_controller:
+      type: 'mesh_controller/MeshController'
+      ang_vel_factor: 7.0
+      lin_vel_factor: 1.0
+
+    controller_patience: 2.0
+    controller_max_retries: 4
+    dist_tolerance: 0.2
+    angle_tolerance: 0.8
+    cmd_vel_ignored_tolerance: 10.0
+
+    recovery_behaviors:
+      - name: 'wait_recovery'
+        type: 'recovery_behaviors/WaitRecovery'
+
+    mesh_map:
+      # mesh_file is set via launch arg
+      mesh_part: '/'
+      # mesh_working_file is set via launch arg
+      mesh_working_part: 'mesh'
+
+      # Layers
+      layers:
+        - border
+        - height_diff
+        - roughness
+        - static_combination
+        - static_inflation
+        - obstacle
+        - obstacle_inflation
+        - final
+
+      default_layer: 'final'
+
+      border:
+        type: 'mesh_layers/BorderLayer'
+        combination_weight: 1.0
+        border_cost: 1.0
+        threshold: 0.2
+
+      height_diff:
+        type: 'mesh_layers/HeightDiffLayer'
+        combination_weight: 1.0
+        threshold: 0.2
+
+      roughness:
+        type: 'mesh_layers/RoughnessLayer'
+        combination_weight: 1.0
+        threshold: 0.8
+
+      static_combination:
+        type: 'mesh_layers/AvgCombinationLayer'
+        inputs: ['height_diff', 'border', 'roughness']
+
+      static_inflation:
+        type: 'mesh_layers/InflationLayer'
+        inputs: ['static_combination']
+        combination_weight: 1.0
+        inflation_radius: 1.5 
+        inscribed_radius: 0.4 
+        lethal_value: .inf
+        inscribed_value: 1.0
+        repulsive_field: false
+        cost_scaling_factor: 2.0
+
+      obstacle:
+        type: 'mesh_layers/ObstacleLayer'
+        combination_weight: 1.0
+        robot_height: 0.7 
+        max_obstacle_dist: 10.0
+        topic: '/model/my_bot/cloud' # Use the point cloud directly
+
+      obstacle_inflation:
+        type: 'mesh_layers/InflationLayer'
+        inputs: ['obstacle']
+        combination_weight: 1.0
+        inflation_radius: 1.5 
+        inscribed_radius: 0.4
+        lethal_value: .inf
+        inscribed_value: 1.0
+        repulsive_field: false
+        cost_scaling_factor: 2.0
+
+      final:
+        type: 'mesh_layers/MaxCombinationLayer'
+        inputs: ['static_inflation', 'obstacle_inflation']
+
+      edge_cost_factor: 5.0
+      publish_edge_weights_text: false
+      enable_layer_timer: false

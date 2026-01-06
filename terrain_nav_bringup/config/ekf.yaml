@@ -1,0 +1,31 @@
+### ekf_node config
+ekf_filter_node:
+  ros__parameters:
+    frequency: 50.0
+    two_d_mode: false
+    publish_tf: true
+    
+    map_frame: map
+    odom_frame: odom
+    base_link_frame: base_footprint
+    world_frame: odom
+
+    # Odom from Gazebo (DiffDrive - Velocity Only)
+    odom0: /model/my_bot/odometry
+    odom0_config: [false, false, false,
+                   false, false, false,
+                   true, true, false,
+                   false, false, true,
+                   false, false, false]
+    odom0_differential: false
+    odom0_queue_size: 10
+
+    # IMU from Gazebo
+    imu0: /imu
+    imu0_config: [false, false, false,
+                  false, false, false,
+                  false, false, false,
+                  true,  true,  true,
+                  false, false, false]
+    imu0_differential: false
+    imu0_queue_size: 10
